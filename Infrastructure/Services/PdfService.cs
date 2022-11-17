@@ -36,7 +36,7 @@ namespace Infrastructure.Services
             catch (Exception ex)
             {
                 Log.Error("Could not find Pdf file with {id} {exMessage}", id, ex.Message);
-                return null;
+                return new PdfModel(ex.Message);
             }
         }
 
@@ -47,6 +47,8 @@ namespace Infrastructure.Services
                 var converter = new BasicConverter(new PdfTools());
 
                 var globalSettings = _mapper.Map<GlobalSettings>(pdfInputModel.Options);
+                globalSettings.PaperSize = Enum.Parse<PaperKind>(pdfInputModel.Options.PagePaperSize);
+                globalSettings.ColorMode = Enum.Parse<ColorMode>(pdfInputModel.Options.PageColorMode);
 
                 var htmlContentBase64 = Convert.FromBase64String(pdfInputModel.HtmlString);
 
@@ -70,13 +72,15 @@ namespace Infrastructure.Services
 
                 var pdfDoc = converter.Convert(doc);
 
-                var (pdfDocumentSize, pdfPath) = await GetPdfDocumentSizeAsync(pdfDoc, pdfInputModel.Options?.FileName);
+                var fileName = $"pdf-{DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")}.pdf";
+
+                var (pdfDocumentSize, pdfPath) = await GetPdfDocumentSizeAsync(pdfDoc, fileName);
 
                 var pdfOutputDocumentBase64 = Convert.ToBase64String(pdfDoc);
 
                 var pdf = await _pdfRepository.InsertAsync(new Pdf
                 {
-                    FileName = pdfInputModel.Options.FileName,
+                    FileName = fileName,
                     Path = pdfPath,
                     HtmlString = htmlContent,
                     PdfDocumentSize = pdfDocumentSize,

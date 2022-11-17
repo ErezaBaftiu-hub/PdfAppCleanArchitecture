@@ -13,5 +13,11 @@ namespace Infrastructure.Models
         public string? Path { get; set; }
         public string? UrlPath { get; set; }
         public int? PdfDocumentSize { get; set; }
+        public string? ErrorMessage { get; set; }
+
+        public PdfModel(string errorMessage)
+        {
+            ErrorMessage = errorMessage;
+        }
     }
 }

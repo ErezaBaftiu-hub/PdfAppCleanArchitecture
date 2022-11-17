@@ -22,7 +22,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
 builder.Services.AddDbContext<PdfDbContext>(options =>
                 options.UseSqlServer(_configuration["ConnectionStrings:PdfDbContext"]));
 
@@ -30,11 +29,11 @@ builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(EntityRepository<>));
 builder.Services.AddScoped<IValidator<PdfInputModel>, PdfInputModelValidator>();
 builder.Services.AddAutoMapper(typeof(PdfMapper));
-
+builder.Services.AddAuthorization();
 
 var elasticSearchUrl = _configuration["Elastic"];
 
-Serilog.Log.Logger = new LoggerConfiguration()
+Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Debug)
